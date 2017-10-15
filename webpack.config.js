@@ -29,7 +29,7 @@ module.exports = {
 	plugins: [
 		new CleanWebpackPlugin([output]),
 		new HtmlWebpackPlugin({
-			title: 'Black line',
+			title: 'Black Runner',
 			inject: 'head',
 			favicon: path.resolve(input, "favico.ico"),
 			hash: true
