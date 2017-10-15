@@ -1,15 +1,17 @@
 import {fabric} from 'fabric';
 
-import generateWorld from 'game/generateWorld';
-import simulateWorld from 'game/simulateWorld';
-import inputListener from 'game/inputListener';
+import generateWorld from 'game/world/generateWorld';
+import simulateWorld from 'game/simulation/simulateWorld';
+import simulateTranslation from 'game/simulation/simulateTranslation';
+import inputListener from 'game/input/inputListener';
+import {rgbaTranslation, scaleTranslation} from 'game/translation/TranslationFactory';
 
 class Game {
 
 	constructor(canvasEl) {
 		this.canvas = new fabric.Canvas(canvasEl);
-		this.canvas.setHeight(500);
-		this.canvas.setWidth(800);
+		this.canvas.setHeight(window.innerHeight * 0.98);
+		this.canvas.setWidth(window.innerWidth * 0.98);
 	}
 
 	init() {
@@ -17,44 +19,25 @@ class Game {
 	}
 
 	start() {
-		generateWorld(800, 500).then((world) => {
+		generateWorld(this.canvas.getWidth(), this.canvas.getHeight()).then((world) => {
 
 			this.clear();
 
 			world.eventCallbacks.gameOver = () => {
-				const text = new fabric.Text("Game Over", {
-					fontWeight: 'bold',
-					fill: 'rgba(246,0,0,1)',
-					fontSize: 40
+				this.alert({
+					text:"Game Over",
+					color: {r: 220, g: 0, b: 0}
 				});
-
-				text.set({
-					left: world.width / 2 - 80,
-					top: world.height / 2 - text.get('height')
-				});
-
-				// TODO text animation
-
-				this.canvas.add(text);
 			};
 
 			world.eventCallbacks.success = () => {
-				const text = new fabric.Text("Flawless victory", {
-					fontWeight: 'bold',
-					fill: 'rgba(0,246,0,1)',
-					fontSize: 40
+				this.alert({
+					text:"Flawless victory",
+					color: {r: 160, g: 220, b: 50}
 				});
-
-				text.set({
-					left: world.width / 2 - 80,
-					top: world.height / 2 - text.get('height')
-				});
-
-				// TODO text animation
-
-				this.canvas.add(text);
 			};
 
+			this.canvas.add(world.prize);
 			this.canvas.add(world.player);
 
 			for (let obj of world.objects) {
@@ -65,9 +48,37 @@ class Game {
 
 			this.interval = setInterval(() => {
 				simulateWorld(world);
+				simulateTranslation(this.canvas.getObjects(), world);
 				this.canvas.renderAll();
 			}, 40);
 		});
+	}
+
+	alert({text, color:{r, g, b}}) {
+		const textElem = new fabric.Text(text, {
+			fontWeight: 'bold',
+			fill: `rgba(${r},${g},${b},0)`,
+			fontSize: this.canvas.getHeight() * 0.15,
+			scaleX: 0.2,
+			scaleY: 0.2,
+			translations: [
+				rgbaTranslation({
+					duration: 1000,
+					finalValue: `rgba(${r},${g},${b},1)`
+				}),
+				scaleTranslation({
+					duration: 1000,
+					finalValue: 1
+				})
+			]
+		});
+
+		textElem.set({
+			left: this.canvas.getWidth() / 2 - textElem.getWidth() / 2,
+			top: this.canvas.getHeight() / 2 - textElem.getHeight() / 2,
+		});
+
+		this.canvas.add(textElem);
 	}
 
 	clear() {

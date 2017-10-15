@@ -1,0 +1,25 @@
+{
+  "translations": [
+    /* Animation data */
+    {
+      /* values, initialized by simulator */
+      "_simulation": {
+        "startTime": "Start time, set by simulator, when animation simulation started",
+        "finishTime": "End time, set by simulator, when animation simulation started",
+        "startValue": "Initial value, set before changes of animated property",
+        "finalValue": "Final value, set before changes of animated property",
+
+        "reverse": "? flag, set by simulator, shows that animation should go backwards (for infinite)"
+      },
+
+      "updateValue": "function({timePassed, linearProgress, animationData, targetObject}) actual value changer",
+      "duration": "specified animation duration",
+      "infinite": "flag, if animation should be looped",
+
+      "next": "? Link to next animation, which should be started after this one",
+      "onFinish": "? Function, callback for finish"
+
+    }
+  ],
+  "properties": "Object with individual properties"
+}

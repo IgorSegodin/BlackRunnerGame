@@ -36,6 +36,8 @@ function inputListener(world) {
 	document.addEventListener("keyup", function(e){
 		process(e.keyCode, world, true);
 	});
+
+	return function() {};
 }
 
 

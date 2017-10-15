@@ -1,36 +1,28 @@
-import {MOVE_UP, MOVE_DOWN, MOVE_LEFT, MOVE_RIGHT} from 'game/inputListener';
-
-function isIntersected(obj1, obj2) {
-	const x1 = obj1.get('left') + (obj1.get('width') / 2);
-	const y1 = obj1.get('top') + (obj1.get('height') / 2);
-	const w1 = obj1.get('width');
-	const h1 = obj1.get('height');
-
-	const x2 = obj2.get('left') + (obj2.get('width') / 2);
-	const y2 = obj2.get('top') + (obj2.get('height') / 2);
-	const w2 = obj2.get('width');
-	const h2 = obj2.get('height');
-
-	return Math.abs(x1 - x2) <= w1 / 2 + w2 / 2 &&
-		Math.abs(y1 - y2) <= h1 / 2 + h2 / 2;
-}
+import {MOVE_UP, MOVE_DOWN, MOVE_LEFT, MOVE_RIGHT} from 'game/input/inputListener';
+import {isIntersected} from 'util/FabricUtil';
 
 function simulateWorld(world) {
+
+	// TODO calculate values depending on passed time (use Timer)
+	// TODO divide into diferent simulators (player input simulator)
+	// TODO improve player and world properties (canMove, isAlive etc.)
+
+	const playerIntersectionTolerance = (world.player.getWidth() + world.player.getHeight()) / 2 * 0.1; // 10% of player size
 
 	for (let obj of world.objects) {
 		let left = obj.get("left") + obj.get("speed");
 
-		const right = left + obj.get('width');
+		const right = left + obj.getWidth();
 
 		if (right >= world.totalRowWidth) {
-			left = right - world.totalRowWidth - obj.get('width');
+			left = right - world.totalRowWidth - obj.getWidth();
 		}
 
 		obj.set({
 			left: left
 		});
 
-		if (world.player.get('canMove') && isIntersected(world.player, obj)) {
+		if (world.player.get('canMove') && isIntersected(world.player, obj, playerIntersectionTolerance)) {
 			world.player.set({canMove: false});
 			world.eventCallbacks.gameOver();
 		}
@@ -38,7 +30,7 @@ function simulateWorld(world) {
 
 	if (world.player.get('canMove')) {
 
-		if (world.player.get('top') + world.player.get('height') <= world.rowHeight ) {
+		if (isIntersected(world.player, world.prize, playerIntersectionTolerance)) {
 			world.player.set({canMove: false});
 			world.eventCallbacks.success();
 		}
@@ -57,8 +49,8 @@ function simulateWorld(world) {
 
 		if (world.input[MOVE_DOWN]) {
 			playerPosition.top = playerPosition.top + world.player.speed;
-			if (playerPosition.top + world.player.get('height') > world.height) {
-				playerPosition.top = world.height - world.player.get('height');
+			if (playerPosition.top + world.player.getHeight() > world.height) {
+				playerPosition.top = world.height - world.player.getHeight();
 			}
 		}
 
@@ -71,8 +63,8 @@ function simulateWorld(world) {
 
 		if (world.input[MOVE_RIGHT]) {
 			playerPosition.left = playerPosition.left + world.player.speed;
-			if (playerPosition.left + world.player.get('width') > world.width) {
-				playerPosition.left = world.width - world.player.get('width');
+			if (playerPosition.left + world.player.getWidth() > world.width) {
+				playerPosition.left = world.width - world.player.getWidth();
 			}
 		}
 

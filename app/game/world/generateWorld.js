@@ -1,5 +1,7 @@
 import {fabric} from 'fabric';
 import PekaImage from 'peka.png';
+import DollarImage from 'dollar.png';
+import {promiseImage} from 'util/FabricUtil';
 
 function random(min, max) {
 	return Math.floor((Math.random() * max) + min);
@@ -68,7 +70,8 @@ function generateWorld(width, height) {
 		}
 	}
 
-	return new Promise(function(resolve, reject) {
+	return Promise.all([promiseImage(PekaImage), promiseImage(DollarImage)]).then((images) => {
+
 		const world = {
 			width: width,
 			height: height,
@@ -79,20 +82,27 @@ function generateWorld(width, height) {
 			eventCallbacks: {}
 		};
 
-		fabric.Image.fromURL(PekaImage, (image) => {
-			world.player = image;
+		world.player = images[0];
 
-			world.player.set({
-				width: playerSize,
-				height: playerSize,
-				left: (width / 2) - (playerSize / 2),
-				top: height - playerSize,
-				speed: 10,
-				canMove: true
-			});
-
-			resolve(world);
+		world.player.set({
+			width: playerSize,
+			height: playerSize,
+			left: (width / 2) - (playerSize / 2),
+			top: height - playerSize,
+			speed: 10,
+			canMove: true
 		});
+
+		world.prize = images[1];
+
+		world.prize.set({
+			width: rowHeight,
+			height: rowHeight / 2,
+			left: (width / 2) - (rowHeight / 2),
+			top: 0
+		});
+
+		return world;
 	});
 }
 
