@@ -7,7 +7,33 @@ function random(min, max) {
 	return Math.floor((Math.random() * max) + min);
 }
 
-function generateMap(totalSegmentCount, rowSegmentCount) {
+function findSegmentBorders(index, map) {
+	if (index > map.length -1) {
+		throw new Error("IndexOutOfBoundsException");
+	}
+	const val = map[index];
+
+	let left = index;
+	let right = index;
+
+	while (true) {
+		let found = true;
+		if (left > 0 && map[left - 1] == val) {
+			left--;
+			found = false;
+		}
+		if (right < map.length - 1 && map[right + 1] == val) {
+			right++;
+			found = false;
+		}
+		if (found) {
+			break;
+		}
+	}
+	return {left, right};
+}
+
+function generateMap(totalSegmentCount, rowSegmentCount, maxSegmentCountPerRow) {
 	const map = [];
 
 	for (let i = 1; i <= totalSegmentCount; i++) {
@@ -24,6 +50,11 @@ function generateMap(totalSegmentCount, rowSegmentCount) {
 		map[p1] = map[p2];
 		map[p2] = tmp;
 	}
+
+	// TODO FIX too long segments
+	// for () {
+	//
+	// }
 
 	return map;
 }
@@ -53,20 +84,23 @@ function generateWorld(width, height) {
 
 		const rowSpeed = random(1, 20);
 
+		let stackSize = 0;
 		for (let cell = 0; cell < map.length; cell++) {
-			if (map[cell] === 0) {
-				continue;
+			if (map[cell] === 1) {
+				stackSize++;
+			} else  if (map[cell] === 0 && stackSize > 0) {
+				objects.push(
+					new fabric.Rect({
+						left: (cell - stackSize) * segmentWidth,
+						top: row * rowHeight,
+						fill: 'black',
+						width: segmentWidth * stackSize,
+						height: rowHeight,
+						speed: rowSpeed
+					})
+				);
+				stackSize = 0;
 			}
-			objects.push(
-				new fabric.Rect({
-					left: cell * segmentWidth,
-					top: row * rowHeight,
-					fill: 'black',
-					width: segmentWidth,
-					height: rowHeight,
-					speed: rowSpeed
-				})
-			);
 		}
 	}
 
