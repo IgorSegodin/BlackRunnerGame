@@ -9,7 +9,7 @@ function simulateTranslation(objects, world) {
 			continue;
 		}
 
-		let finishedTranslationIndexes = [];
+		let finishedTranslationData = [];
 
 		for (let idx = 0; idx < translations.length; idx++) {
 			const translationData = translations[idx];
@@ -31,13 +31,13 @@ function simulateTranslation(objects, world) {
 				if (translationData.infinite) {
 					throw new Error('Infinite animation is not implemented yet');
 				} else {
-					finishedTranslationIndexes.push(idx);
+					finishedTranslationData.push(translationData);
 				}
 			}
 		}
 
-		for (let idx of finishedTranslationIndexes) {
-			const translationData = translations[idx];
+		for (let translationData of finishedTranslationData) {
+			const idx = translations.indexOf(translationData);
 			translations = translations.splice(idx + 1, 1);
 
 			if (translationData.onFinish) {

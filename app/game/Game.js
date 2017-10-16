@@ -18,6 +18,18 @@ class Game {
 		this.start();
 	}
 
+	registerRestartInputListener(world) {
+		let restartInputHandler = (e) => {
+			if (13 === e.keyCode && !world.player.get("canMove")) {
+				this.start();
+			}
+		};
+		document.addEventListener("keydown", restartInputHandler);
+		return function() {
+			document.removeEventListener("keydown", restartInputHandler);
+		}
+	}
+
 	start() {
 		generateWorld(this.canvas.getWidth(), this.canvas.getHeight()).then((world) => {
 
@@ -25,17 +37,21 @@ class Game {
 
 			world.eventCallbacks.gameOver = () => {
 				this.alert({
-					text:"Game Over",
+					text: "Game Over",
 					color: {r: 220, g: 0, b: 0}
 				});
 			};
 
 			world.eventCallbacks.success = () => {
 				this.alert({
-					text:"Flawless victory",
+					text: "Flawless victory",
 					color: {r: 160, g: 220, b: 50}
 				});
 			};
+
+			this.unregisterRestartInputListener = this.registerRestartInputListener(world);
+
+			document.addEventListener("keydown", this.restartInputHandler);
 
 			this.canvas.add(world.prize);
 			this.canvas.add(world.player);
@@ -85,6 +101,10 @@ class Game {
 		if (this.interval) {
 			clearInterval(this.interval);
 			this.interval = null;
+		}
+		if (this.unregisterRestartInputListener) {
+			this.unregisterRestartInputListener();
+			this.unregisterRestartInputListener = null;
 		}
 
 		this.canvas.clear();
