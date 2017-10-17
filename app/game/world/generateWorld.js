@@ -8,7 +8,7 @@ function random(min, max) {
 }
 
 function findSegmentBorders(index, map) {
-	if (index > map.length -1) {
+	if (index > map.length - 1) {
 		throw new Error("IndexOutOfBoundsException");
 	}
 	const val = map[index];
@@ -18,11 +18,11 @@ function findSegmentBorders(index, map) {
 
 	while (true) {
 		let found = true;
-		if (left > 0 && map[left - 1] == val) {
+		if (left > 0 && map[left - 1] === val) {
 			left--;
 			found = false;
 		}
-		if (right < map.length - 1 && map[right + 1] == val) {
+		if (right < map.length - 1 && map[right + 1] === val) {
 			right++;
 			found = false;
 		}
@@ -51,15 +51,26 @@ function generateMap(totalSegmentCount, rowSegmentCount, maxSegmentCountPerRow) 
 		map[p2] = tmp;
 	}
 
-	// TODO FIX too long segments
-	// for () {
-	//
-	// }
+	// Fix super long segments, they should not be longer that maxSegmentCountPerRow
+	for (let i = 0; i < map.length;i++)  {
+		const value = map[i];
+		if (value === 0) {
+			continue;
+		}
+		const borders = findSegmentBorders(i, map);
+		const segmentLength = borders.right - borders.left;
+
+		if (segmentLength > maxSegmentCountPerRow) {
+			map[segmentLength / 2] = 0;
+		}
+
+		i = borders.right;
+	}
 
 	return map;
 }
 
-function generateWorld(width, height) {
+function promiseGenerateWorld(width, height) {
 	const rowNumber = 7;
 	const rowHeight = height / rowNumber;
 	const playerSize = height * 0.10; // 10% of total visible screen
@@ -67,45 +78,53 @@ function generateWorld(width, height) {
 	const segmentWidth = width * 0.10; // 10% of total visible screen
 	const totalRowWidth = width * 3; // 3 times of visible screen
 
-	const totalSegmentCount = totalRowWidth / segmentWidth;
-	const minSegmentCount = totalSegmentCount * 0.2;
-	const maxSegmentCount = totalSegmentCount * 0.8;
+	const totalSegmentCount = Math.round(totalRowWidth / segmentWidth);
+	const minSegmentCount = Math.round(totalSegmentCount * 0.2);
+	const maxSegmentCount = Math.round(totalSegmentCount * 0.8);
 
-	const objects = [];
+	return new Promise(function(resolve, reject) {
+		const objects = [];
 
-	// skip first, last row, and each second row
-	for (let row = 1; row < rowNumber - 1; row++) {
-		if (row % 2 == 0) {
-			continue;
-		}
-		const rowSegmentCount = random(minSegmentCount, maxSegmentCount);
+		// skip first, last row, and each second row
+		for (let row = 1; row < rowNumber - 1; row++) {
+			if (row % 2 == 0) {
+				continue;
+			}
+			const rowSegmentCount = random(minSegmentCount, maxSegmentCount);
 
-		const map = generateMap(totalSegmentCount, rowSegmentCount);
+			const map = generateMap(totalSegmentCount, rowSegmentCount, Math.round(maxSegmentCount * 0.66));
 
-		const rowSpeed = random(1, 20);
+			const rowSpeed = random(1, 20);
 
-		let stackSize = 0;
-		for (let cell = 0; cell < map.length; cell++) {
-			if (map[cell] === 1) {
-				stackSize++;
-			} else  if (map[cell] === 0 && stackSize > 0) {
-				objects.push(
-					new fabric.Rect({
-						left: (cell - stackSize) * segmentWidth,
-						top: row * rowHeight,
-						fill: 'black',
-						width: segmentWidth * stackSize,
-						height: rowHeight,
-						speed: rowSpeed
-					})
-				);
-				stackSize = 0;
+			let stackSize = 0;
+			for (let cell = 0; cell < map.length; cell++) {
+				if (map[cell] === 1) {
+					stackSize++;
+				} else  if (map[cell] === 0 && stackSize > 0) {
+					objects.push(
+						new fabric.Rect({
+							left: (cell - stackSize) * segmentWidth,
+							top: row * rowHeight,
+							fill: 'black',
+							width: segmentWidth * stackSize,
+							height: rowHeight,
+							speed: rowSpeed
+						})
+					);
+					stackSize = 0;
+				}
 			}
 		}
-	}
 
-	return Promise.all([promiseImage(PekaImage), promiseImage(DollarImage)]).then((images) => {
+		resolve(objects);
 
+	}).then(function(objects) {
+		return new Promise((resolve, reject) => {
+			Promise.all([promiseImage(PekaImage), promiseImage(DollarImage)]).then((images) => {
+				resolve({images, objects});
+			});
+		});
+	}).then(({images, objects}) => {
 		const world = {
 			width: width,
 			height: height,
@@ -140,4 +159,4 @@ function generateWorld(width, height) {
 	});
 }
 
-export default generateWorld;
+export default promiseGenerateWorld;
