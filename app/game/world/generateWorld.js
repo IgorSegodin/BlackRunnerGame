@@ -1,11 +1,8 @@
 import {fabric} from 'fabric';
-import PekaImage from 'peka.png';
+import PekaImage from 'biven_game.png';
 import DollarImage from 'dollar.png';
 import {promiseImage} from 'util/FabricUtil';
-
-function random(min, max) {
-	return Math.floor((Math.random() * max) + min);
-}
+import {random} from 'util/RandomUtil';
 
 function findSegmentBorders(index, map) {
 	if (index > map.length - 1) {

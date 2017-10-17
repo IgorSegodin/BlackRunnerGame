@@ -5,6 +5,10 @@ import simulateWorld from 'game/simulation/simulateWorld';
 import simulateTranslation from 'game/simulation/simulateTranslation';
 import inputListener from 'game/input/inputListener';
 import {rgbaTranslation, scaleTranslation} from 'game/translation/TranslationFactory';
+import {random} from 'util/RandomUtil';
+
+const victoryQuotes = ['Nigga', 'Na Lanos', 'Na rezinu'];
+const gameOverQuotes = ['Sheben\'', ',bdtym', 'Poc', 'Smetana'];
 
 class Game {
 
@@ -37,14 +41,14 @@ class Game {
 
 			world.eventCallbacks.gameOver = () => {
 				this.alert({
-					text: "Game Over",
+					text: gameOverQuotes[random(0, gameOverQuotes.length -1)],
 					color: {r: 220, g: 0, b: 0}
 				});
 			};
 
 			world.eventCallbacks.success = () => {
 				this.alert({
-					text: "Flawless victory",
+					text: victoryQuotes[random(0, victoryQuotes.length -1)],
 					color: {r: 160, g: 220, b: 50}
 				});
 			};
